@@ -3,7 +3,7 @@ package organigrammaAziendale;
 import javax.swing.*;
 import java.awt.*;
 
-public class InterfacciaGrafica extends JFrame {
+public class GUI extends JFrame {
 
     final String TITOLO = "Organigramma Aziendale";
     JPanel finestra = new JPanel();
@@ -11,7 +11,7 @@ public class InterfacciaGrafica extends JFrame {
     private ZoomManager zoomManager;
 
     // Costruttore, inizializza la finestra
-    public InterfacciaGrafica() {
+    public GUI() {
         super();
         this.setTitle(TITOLO);
         this.setSize(800, 800);
@@ -35,7 +35,6 @@ public class InterfacciaGrafica extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         ZoomMenu zoomMenu = new ZoomMenu();
         JMenu file = new JMenu("File");
-
         // Aggiungi i menu alla barra del menu
         menuBar.add(file);  //da creare il menu che gestisce i file
         menuBar.add(zoomMenu);
@@ -46,6 +45,6 @@ public class InterfacciaGrafica extends JFrame {
     }
 
     public static void main(String[] args) {
-        new InterfacciaGrafica();
+        new GUI();
     }
 }
