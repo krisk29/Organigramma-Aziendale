@@ -1,4 +1,4 @@
-package organigrammaAziendale;
+package organigrammaAziendale.interfacciaGrafica;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +8,7 @@ public class GUI extends JFrame {
     final String TITOLO = "Organigramma Aziendale";
     JPanel finestra = new JPanel();
     JScrollPane finestraScroll = new JScrollPane(finestra, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    private ZoomManager zoomManager;
+
 
     // Costruttore, inizializza la finestra
     public GUI() {
@@ -33,18 +33,17 @@ public class GUI extends JFrame {
 
     private void creaMenu() {
         JMenuBar menuBar = new JMenuBar();
-        ZoomMenu zoomMenu = new ZoomMenu();
+
         JMenu file = new JMenu("File");
         // Aggiungi i menu alla barra del menu
         menuBar.add(file);  //da creare il menu che gestisce i file
-        menuBar.add(zoomMenu);
+
 
         // Imposta la barra del menu nel JFrame
         this.setJMenuBar(menuBar);
-        zoomManager = new ZoomManager(finestra);
+
     }
 
-    public static void main(String[] args) {
-        new GUI();
-    }
+
+
 }
