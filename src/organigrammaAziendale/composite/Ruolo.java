@@ -1,7 +1,5 @@
 package organigrammaAziendale.composite;
 
-import organigrammaAziendale.visitor.ElementoOrganigrammaVisitor;
-
 import java.util.List;
 
 //foglia della classe ElementoOrganigramma (leaf di composite), non può avere figli
@@ -40,11 +38,6 @@ public class Ruolo implements ElementoOrganigramma {
     @Override
     public List<ElementoOrganigramma> getElementi() {
         throw new UnsupportedOperationException("Un ruolo non contiene altri elementi.");
-    }
-
-    @Override
-    public void accept(ElementoOrganigrammaVisitor visitor) {
-        visitor.visit(this);
     }
 
     // dal main di esempio di disegna visitor

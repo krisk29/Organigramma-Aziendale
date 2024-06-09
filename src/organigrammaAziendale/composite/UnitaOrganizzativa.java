@@ -1,7 +1,5 @@
 package organigrammaAziendale.composite;
 
-import organigrammaAziendale.visitor.ElementoOrganigrammaVisitor;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,14 +40,6 @@ public class UnitaOrganizzativa implements ElementoOrganigramma {
     @Override
     public List<ElementoOrganigramma> getElementi() {
         return elementi;
-    }
-
-    @Override
-    public void accept(ElementoOrganigrammaVisitor visitor) {
-        visitor.visit(this);
-        for (ElementoOrganigramma elemento : elementi) {
-            elemento.accept(visitor);
-        }
     }
 
     // dal main di esempio di disegna visitor

@@ -3,7 +3,7 @@ package organigrammaAziendale.interfacciaGrafica;
 import organigrammaAziendale.composite.ElementoOrganigramma;
 import organigrammaAziendale.composite.UnitaOrganizzativa;
 import organigrammaAziendale.observer.Subject;
-
+// da rifare
 public class Organigramma extends Subject {
     private UnitaOrganizzativa root;
 

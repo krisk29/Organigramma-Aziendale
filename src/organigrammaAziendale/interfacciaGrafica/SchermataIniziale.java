@@ -1,5 +1,5 @@
 package organigrammaAziendale.interfacciaGrafica;
-
+//1
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -103,10 +103,10 @@ public class SchermataIniziale extends JFrame {
 
     public void nuovaSchermata() {
         // Crea un'istanza della seconda schermata
-        GUI secondaSchermata = new GUI();   //da cambiare con la schermata che creerò
+        SchermataDiLavoro schermata = new SchermataDiLavoro();   //da cambiare con la schermata che creerò
 
         // Rendi visibile la seconda schermata
-        secondaSchermata.setVisible(true);
+        schermata.setVisible(true);
 
         // Chiudi la schermata corrente se necessario
         dispose();
