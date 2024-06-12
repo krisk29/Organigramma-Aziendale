@@ -37,12 +37,12 @@ public class UnitaOrganizzativa implements ElementoOrganigramma {
         elementi.remove(elemento);
     }
 
+
     @Override
     public List<ElementoOrganigramma> getElementi() {
         return elementi;
     }
 
-    // dal main di esempio di disegna visitor
     // Metodi getter e setter per le coordinate
     public int getX() {
         return x;
@@ -59,4 +59,9 @@ public class UnitaOrganizzativa implements ElementoOrganigramma {
     public void setY(int y) {
         this.y = y;
     }
+
+    public String toString(){
+        return nome;
+    }
+
 }

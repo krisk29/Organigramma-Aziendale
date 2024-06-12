@@ -1,19 +1,23 @@
 package organigrammaAziendale.interfacciaGrafica;
 
+import organigrammaAziendale.composite.Organigramma;
 import organigrammaAziendale.composite.UnitaOrganizzativa;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class SchermataDiLavoro extends JFrame {
+public class SchermataPrincipale extends JFrame {
 
     final String TITOLO = "Organigramma Aziendale";
     JPanel finestra = new JPanel();
     JScrollPane finestraScroll = new JScrollPane(finestra, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
     PannelloDiGestione pannelloDiGestione;
+    //PannelloOrganigramma organigrammaPanel;
+
     Organigramma organigramma;
 
-    public SchermataDiLavoro() {
+    public SchermataPrincipale() {
         super();
         this.setTitle(TITOLO);
         this.setSize(800, 800);
@@ -32,6 +36,7 @@ public class SchermataDiLavoro extends JFrame {
     }
 
     private void creaMenu() {
+        // da fare
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         // Aggiungi i menu alla barra del menu
@@ -43,10 +48,11 @@ public class SchermataDiLavoro extends JFrame {
     private void apriPopupNomeOrganigramma() {
         String nomeOrganigramma = JOptionPane.showInputDialog(this, "Inserisci il nome dell'organigramma:");
         if (nomeOrganigramma != null && !nomeOrganigramma.isEmpty()) {
+            this.setTitle(TITOLO+" - "+nomeOrganigramma);
             organigramma = new Organigramma();
             UnitaOrganizzativa root = new UnitaOrganizzativa(nomeOrganigramma); // Creazione della prima unità organizzativa con il nome inserito
             organigramma.setRoot(root);
-            aggiungiPannelloDiGestione();
+            aggiungiPannelloDiGestione();   //pannello di modifica
             this.setVisible(true); // Impostare la visibilità alla fine
         } else {
             // Inserire gestione nel caso in cui il nome inserito sia vuoto o annullato
@@ -64,11 +70,13 @@ public class SchermataDiLavoro extends JFrame {
     }
 
     public static void main(String[] args) {
+        // da controllare questa cosa
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new SchermataDiLavoro();
+                new SchermataPrincipale();
             }
         });
     }
+
 }

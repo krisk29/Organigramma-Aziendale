@@ -10,10 +10,11 @@ public interface ElementoOrganigramma {
     void add(ElementoOrganigramma elemento);
     void remove(ElementoOrganigramma elemento);
     List<ElementoOrganigramma> getElementi();   //getChild
-    //dall'esempio del main
+    //per la posizione
     void setX(int x);
     void setY(int y);
     int getX();
     int getY();
 }
+
 

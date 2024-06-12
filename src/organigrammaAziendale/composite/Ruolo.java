@@ -40,7 +40,6 @@ public class Ruolo implements ElementoOrganigramma {
         throw new UnsupportedOperationException("Un ruolo non contiene altri elementi.");
     }
 
-    // dal main di esempio di disegna visitor
     // Metodi getter e setter per le coordinate
     public int getX() {
         return x;
@@ -56,6 +55,10 @@ public class Ruolo implements ElementoOrganigramma {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public String toString(){
+        return nome;
     }
 }
 
