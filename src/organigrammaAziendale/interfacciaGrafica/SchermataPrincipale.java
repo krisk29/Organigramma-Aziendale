@@ -13,7 +13,7 @@ public class SchermataPrincipale extends JFrame {
     JScrollPane finestraScroll = new JScrollPane(finestra, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     PannelloDiGestione pannelloDiGestione;
-    //PannelloOrganigramma organigrammaPanel;
+    DisegnaOrganigramma organigrammaPanel;
 
     Organigramma organigramma;
 
@@ -48,11 +48,12 @@ public class SchermataPrincipale extends JFrame {
     private void apriPopupNomeOrganigramma() {
         String nomeOrganigramma = JOptionPane.showInputDialog(this, "Inserisci il nome dell'organigramma:");
         if (nomeOrganigramma != null && !nomeOrganigramma.isEmpty()) {
-            this.setTitle(TITOLO+" - "+nomeOrganigramma);
+            this.setTitle(TITOLO + " - " + nomeOrganigramma);
             organigramma = new Organigramma();
             UnitaOrganizzativa root = new UnitaOrganizzativa(nomeOrganigramma); // Creazione della prima unità organizzativa con il nome inserito
             organigramma.setRoot(root);
-            aggiungiPannelloDiGestione();   //pannello di modifica
+            aggiungiPannelloDiGestione(); // pannello di modifica
+            aggiungiPannelloOrganigramma(); // pannello che disegna l'organigramma
             this.setVisible(true); // Impostare la visibilità alla fine
         } else {
             // Inserire gestione nel caso in cui il nome inserito sia vuoto o annullato
@@ -61,12 +62,27 @@ public class SchermataPrincipale extends JFrame {
         }
     }
 
-
     private void aggiungiPannelloDiGestione() {
-        pannelloDiGestione = new PannelloDiGestione(organigramma);
+        pannelloDiGestione = new PannelloDiGestione(this, organigramma);
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(pannelloDiGestione, BorderLayout.CENTER);
         finestra.add(rightPanel, BorderLayout.EAST);
+    }
+
+    private void aggiungiPannelloOrganigramma() {
+        organigrammaPanel = new DisegnaOrganigramma(organigramma.getRoot());
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(organigrammaPanel, BorderLayout.CENTER);
+        finestra.add(centerPanel, BorderLayout.CENTER);
+    }
+
+    public void refreshOrganigramma() {
+        finestra.remove(organigrammaPanel);
+        aggiungiPannelloOrganigramma();
+        finestra.revalidate();
+        finestra.repaint();
+        organigramma.printOrganigramma(organigramma.getRoot(),0); // Stampa l'organigramma nel terminale
+        System.out.println(""); //spazio fra un organigramma stampato
     }
 
     public static void main(String[] args) {
@@ -78,5 +94,4 @@ public class SchermataPrincipale extends JFrame {
             }
         });
     }
-
 }

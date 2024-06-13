@@ -10,7 +10,7 @@ import java.io.File;
 public class SchermataIniziale extends JFrame {
 
     final String TITOLO = "Organigramma Aziendale";
-    private final String SFONDO_PATH = "images/schermata-iniziale.jpg";
+    private final String SFONDO_PATH = "images/schermata-iniziale.jpg"; //da cambiare
 
     public SchermataIniziale() {
         super();
@@ -103,17 +103,15 @@ public class SchermataIniziale extends JFrame {
 
     public void nuovaSchermata() {
         // Crea un'istanza della seconda schermata
-        SchermataDiLavoro schermata = new SchermataDiLavoro();   //da cambiare con la schermata che creerò
-
+        SchermataPrincipale schermata = new SchermataPrincipale();
         // Rendi visibile la seconda schermata
         schermata.setVisible(true);
-
         // Chiudi la schermata corrente se necessario
         dispose();
     }
 
     public void caricaOrganigramma() {
-        // Crea un selettore di file
+        // Crea un selettore di file    -   da sistemare
         JFileChooser fileChooser = new JFileChooser();
 
         // Aggiungi filtri per i file con estensioni specifiche

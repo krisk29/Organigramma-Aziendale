@@ -27,7 +27,7 @@ public class Organigramma {
         Command remove = new RimuoviElementoC(genitore,elemento);
         remove.execute();
     }
-
+/*
 
     //main
     public static void main(String[] args) {
@@ -82,7 +82,7 @@ public class Organigramma {
         System.out.println("Organigramma dopo la rimozione di 'RuoloBoh' da 'UnitàBoh':");
         printOrganigramma(root, 0);
     }
-
+*/
 
 
     // Metodo per stampare l'organigramma
