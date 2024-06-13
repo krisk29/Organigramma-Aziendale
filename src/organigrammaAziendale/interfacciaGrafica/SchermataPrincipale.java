@@ -5,6 +5,12 @@ import organigrammaAziendale.composite.UnitaOrganizzativa;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 public class SchermataPrincipale extends JFrame {
 
@@ -36,12 +42,20 @@ public class SchermataPrincipale extends JFrame {
     }
 
     private void creaMenu() {
-        // da fare
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
-        // Aggiungi i menu alla barra del menu
-        menuBar.add(file);  //da creare il menu che gestisce i file
-        // Imposta la barra del menu nel JFrame
+
+        // Aggiungi il menu "Salva"
+        JMenuItem salvaMenuItem = new JMenuItem("Salva");
+        salvaMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                salvaOrganigramma();
+            }
+        });
+        file.add(salvaMenuItem);
+
+        menuBar.add(file);
         this.setJMenuBar(menuBar);
     }
 
@@ -75,6 +89,30 @@ public class SchermataPrincipale extends JFrame {
         centerPanel.add(organigrammaPanel, BorderLayout.CENTER);
         finestra.add(centerPanel, BorderLayout.CENTER);
     }
+
+    private void salvaOrganigramma() {
+        JFileChooser fileChooser = new JFileChooser();
+        int scelta = fileChooser.showSaveDialog(this);
+
+        if (scelta == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+
+            try (FileOutputStream fileOutputStream = new FileOutputStream(file);
+                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+
+                objectOutputStream.writeObject(organigramma);
+                JOptionPane.showMessageDialog(this, "Organigramma salvato con successo.", "Salvataggio", JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException e) {
+                //JOptionPane.showMessageDialog(this, "Errore durante il salvataggio dell'organigramma:\n" + e.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                System.err.println(e);
+            }
+        } else if (scelta == JFileChooser.CANCEL_OPTION) {
+            // caso in cui si clicca cancel
+        }
+    }
+
+
 
     public void refreshOrganigramma() {
         finestra.remove(organigrammaPanel);

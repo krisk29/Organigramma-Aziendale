@@ -1,11 +1,17 @@
 package organigrammaAziendale.composite;
 
-import organigrammaAziendale.command.AggiungiElementoC;
-import organigrammaAziendale.command.Command;
-import organigrammaAziendale.command.RimuoviElementoC;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-public class Organigramma {
+public class Organigramma implements Serializable {
     private ElementoOrganigramma root;
+    private HashMap<Ruolo, ArrayList<String>> ruoliMap;
+    private static final long SerialVersionUID = 1L;
+
+    public Organigramma() {
+        this.ruoliMap = new HashMap<>();
+    }
 
     public ElementoOrganigramma getRoot() {
         return root;
@@ -13,25 +19,21 @@ public class Organigramma {
 
     public void setRoot(ElementoOrganigramma root) {
         this.root = root;
-
     }
 
-    // Metodo per stampare l'organigramma
     public static void printOrganigramma(ElementoOrganigramma elemento, int level) {
-        // Indentazione basata sul livello
         for (int i = 0; i < level; i++) {
             System.out.print("  ");
         }
         System.out.println("- " + elemento.getNome());
 
-        // Stampa dei figli (se presenti)
         if (elemento instanceof UnitaOrganizzativa) {
             for (ElementoOrganigramma figlio : ((UnitaOrganizzativa) elemento).getElementi()) {
                 printOrganigramma(figlio, level + 1);
             }
         }
     }
-    //metodi fatti da chatGPT
+
     public ElementoOrganigramma getSottoAlbero(ElementoOrganigramma elementoOrganigramma) {
         if (elementoOrganigramma instanceof UnitaOrganizzativa) {
             UnitaOrganizzativa originale = (UnitaOrganizzativa) elementoOrganigramma;
@@ -45,7 +47,6 @@ public class Organigramma {
         }
     }
 
-    // Metodo per trovare un elemento per nome
     public ElementoOrganigramma trovaElementoPerNome(String nome) {
         if (root != null) {
             return trovaElementoPerNomeRecursivo(root, nome);
@@ -66,6 +67,28 @@ public class Organigramma {
             }
         }
         return null;
+    }
+
+    public void aggiungiPersonaAlRuolo(Ruolo ruolo, String persona) {
+        ruoliMap.computeIfAbsent(ruolo, k -> new ArrayList<>()).add(persona);
+    }
+
+    public void rimuoviPersonaDalRuolo(Ruolo ruolo, String persona) {
+        ArrayList<String> persone = ruoliMap.get(ruolo);
+        if (persone != null) {
+            persone.remove(persona);
+            if (persone.isEmpty()) {
+                ruoliMap.remove(ruolo);
+            }
+        }
+    }
+
+    public ArrayList<String> getPersonePerRuolo(Ruolo ruolo) {
+        return ruoliMap.getOrDefault(ruolo, new ArrayList<>());
+    }
+
+    public String toString(){
+        return getRoot().getNome();
     }
 
 }

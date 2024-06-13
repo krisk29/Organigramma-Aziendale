@@ -1,11 +1,12 @@
 package organigrammaAziendale.composite;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 //implementazione dell'interfaccia (observer)
 
-public class UnitaOrganizzativa implements ElementoOrganigramma {
+public class UnitaOrganizzativa implements ElementoOrganigramma, Serializable {
     private String nome;
     private List<ElementoOrganigramma> elementi;    //la faccio così altrimenti non potrei inserire un'unità organizzativa dentro un'altra unità organizzativa
     private int x, y;

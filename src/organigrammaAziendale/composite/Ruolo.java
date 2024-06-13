@@ -1,10 +1,11 @@
 package organigrammaAziendale.composite;
 
+import java.io.Serializable;
 import java.util.List;
 
 //foglia della classe ElementoOrganigramma (leaf di composite), non può avere figli
 
-public class Ruolo implements ElementoOrganigramma {
+public class Ruolo implements ElementoOrganigramma, Serializable {
     private String nome;
     private int x, y;
 

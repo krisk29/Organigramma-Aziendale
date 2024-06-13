@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class PannelloDiGestione extends JPanel {
 
@@ -16,14 +17,18 @@ public class PannelloDiGestione extends JPanel {
     private SchermataPrincipale schermataPrincipale;
 
     private JTextField nomeElementoField;
+    private JTextField nomePersonaField;
+    private JTextArea personeTextArea;
 
-    private JComboBox<Ruolo> ruoloComboBox;
+    private JComboBox<Ruolo> ruoloComboBoxElimina;
+    private JComboBox<Ruolo> ruoloComboBoxRuoli;
     private JComboBox<UnitaOrganizzativa> unitaOrganizzativaComboBox;
     private JComboBox<UnitaOrganizzativa> unitaOrganizzativaDiAppartenenzaComboBox;
 
     private DefaultComboBoxModel<UnitaOrganizzativa> unitaOrganizzativaModel;
     private DefaultComboBoxModel<UnitaOrganizzativa> unitaOrganizzativaDiAppartenenzaModel;
-    private DefaultComboBoxModel<Ruolo> ruoloModel;
+    private DefaultComboBoxModel<Ruolo> ruoloModelElimina;
+    private DefaultComboBoxModel<Ruolo> ruoloModelRuoli;
 
     private JRadioButton aggiungiUnitaButton;
     private JRadioButton aggiungiRuoloButton;
@@ -43,12 +48,13 @@ public class PannelloDiGestione extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 3));
         nomeElementoField = new JTextField();
         unitaOrganizzativaModel = new DefaultComboBoxModel<>();
-        ruoloModel = new DefaultComboBoxModel<>();
+        ruoloModelElimina = new DefaultComboBoxModel<>();
+        ruoloModelRuoli = new DefaultComboBoxModel<>();
         unitaOrganizzativaDiAppartenenzaModel = new DefaultComboBoxModel<>();
         unitaOrganizzativaComboBox = new JComboBox<>(unitaOrganizzativaModel);
         unitaOrganizzativaDiAppartenenzaComboBox = new JComboBox<>(unitaOrganizzativaDiAppartenenzaModel);
-        ruoloComboBox = new JComboBox<>(ruoloModel);
-        ruoloComboBox.setEnabled(false);
+        ruoloComboBoxElimina = new JComboBox<>(ruoloModelElimina);
+        ruoloComboBoxElimina.setEnabled(false);
 
         aggiungiUnitaButton = new JRadioButton("Aggiungi Unità Organizzativa");
         aggiungiRuoloButton = new JRadioButton("Aggiungi Ruolo");
@@ -60,8 +66,9 @@ public class PannelloDiGestione extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 unitaOrganizzativaComboBox.setEnabled(false);
-                ruoloComboBox.setEnabled(false);
+                ruoloComboBoxElimina.setEnabled(false);
                 unitaOrganizzativaDiAppartenenzaComboBox.setEnabled(true);
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
@@ -69,8 +76,9 @@ public class PannelloDiGestione extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 unitaOrganizzativaComboBox.setEnabled(true);
-                ruoloComboBox.setEnabled(false);
+                ruoloComboBoxElimina.setEnabled(false);
                 unitaOrganizzativaDiAppartenenzaComboBox.setEnabled(true);
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
@@ -92,6 +100,7 @@ public class PannelloDiGestione extends JPanel {
                     aggiungiRuolo();
                 }
                 schermataPrincipale.refreshOrganigramma();
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
@@ -115,7 +124,8 @@ public class PannelloDiGestione extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 unitaOrganizzativaComboBox.setEnabled(true);
-                ruoloComboBox.setEnabled(false);
+                ruoloComboBoxElimina.setEnabled(false);
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
@@ -123,18 +133,20 @@ public class PannelloDiGestione extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 unitaOrganizzativaComboBox.setEnabled(true);
-                ruoloComboBox.setEnabled(true);
+                ruoloComboBoxElimina.setEnabled(true);
+
+                // Aggiorna la combobox dei ruoli solo se è selezionato il radiobutton per eliminare ruoli
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
-        eliminaFormPanel.add(eliminaUnitaButton);
-        eliminaFormPanel.add(eliminaRuoloButton);
         eliminaFormPanel.add(new JLabel("Seleziona Unità Organizzativa:"));
         eliminaFormPanel.add(unitaOrganizzativaComboBox);
         eliminaFormPanel.add(new JLabel("Seleziona Ruolo:"));
-        eliminaFormPanel.add(ruoloComboBox);
+        eliminaFormPanel.add(ruoloComboBoxElimina);
+        eliminaFormPanel.add(eliminaUnitaButton);
+        eliminaFormPanel.add(eliminaRuoloButton);
 
-        // Aggiungi un ActionListener alla unitaOrganizzativaComboBox per aggiornare la ruoloComboBox
         unitaOrganizzativaComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -153,6 +165,7 @@ public class PannelloDiGestione extends JPanel {
                     eliminaRuolo();
                 }
                 schermataPrincipale.refreshOrganigramma();
+                aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
 
@@ -161,11 +174,61 @@ public class PannelloDiGestione extends JPanel {
         eliminaPannello.add(eliminaFormPanel, BorderLayout.CENTER);
         eliminaPannello.add(eliminaButtonPanel, BorderLayout.SOUTH);
 
+        // Pannello per gestire i ruoli
+        JPanel ruoliPannello = new JPanel();
+        ruoliPannello.setLayout(new BorderLayout());
+
+        JPanel ruoliFormPanel = new JPanel(new GridLayout(3, 2, 5, 3));
+        nomePersonaField = new JTextField();
+        personeTextArea = new JTextArea(5, 20);
+        personeTextArea.setEditable(false);
+        ruoloComboBoxRuoli = new JComboBox<>(ruoloModelRuoli);
+
+        ruoloComboBoxRuoli.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                aggiornaPersoneTextArea((Ruolo) ruoloComboBoxRuoli.getSelectedItem());
+            }
+        });
+
+        ruoliFormPanel.add(new JLabel("Seleziona Ruolo:"));
+        ruoliFormPanel.add(ruoloComboBoxRuoli);
+        ruoliFormPanel.add(new JLabel("Scrivi il nome da aggiungere o eliminare:"));
+        ruoliFormPanel.add(new JLabel(""));
+        ruoliFormPanel.add(new JLabel("Nome Persona:"));
+        ruoliFormPanel.add(nomePersonaField);
+
+
+        JPanel ruoliButtonPanel = new JPanel(new FlowLayout());
+        JButton aggiungiPersonaButton = new JButton("Aggiungi Persona");
+        JButton rimuoviPersonaButton = new JButton("Rimuovi Persona");
+
+        aggiungiPersonaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                aggiungiPersonaAlRuolo();
+            }
+        });
+
+        rimuoviPersonaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rimuoviPersonaDalRuolo();
+            }
+        });
+
+        ruoliButtonPanel.add(aggiungiPersonaButton);
+        ruoliButtonPanel.add(rimuoviPersonaButton);
+
+        ruoliPannello.add(ruoliFormPanel, BorderLayout.NORTH);
+        ruoliPannello.add(new JScrollPane(personeTextArea), BorderLayout.CENTER);
+        ruoliPannello.add(ruoliButtonPanel, BorderLayout.SOUTH);
+
         // Aggiungi i pannelli alle tab
         tabbedPane.addTab("Aggiungi Elemento", aggiungiPannello);
         tabbedPane.addTab("Elimina Elemento", eliminaPannello);
+        tabbedPane.addTab("Ruoli", ruoliPannello);
 
-        // Aggiungi il tabbed pane al pannello principale
         this.add(tabbedPane, BorderLayout.CENTER);
 
         aggiornaComboBox();
@@ -173,7 +236,8 @@ public class PannelloDiGestione extends JPanel {
 
     private void aggiornaComboBox() {
         unitaOrganizzativaModel.removeAllElements();
-        ruoloModel.removeAllElements();
+        ruoloModelElimina.removeAllElements();
+        ruoloModelRuoli.removeAllElements();
         unitaOrganizzativaDiAppartenenzaModel.removeAllElements();
 
         UnitaOrganizzativa root = (UnitaOrganizzativa) organigramma.getRoot();
@@ -191,19 +255,49 @@ public class PannelloDiGestione extends JPanel {
                 aggiungiElementiAlleComboBox(unitaFiglia);
             } else if (elemento instanceof Ruolo) {
                 Ruolo ruolo = (Ruolo) elemento;
-                ruoloModel.addElement(ruolo);
+                ruoloModelElimina.addElement(ruolo);
+                ruoloModelRuoli.addElement(ruolo);
             }
         }
     }
 
     private void aggiornaRuoloComboBoxPerUnita(UnitaOrganizzativa unitaSelezionata) {
-        ruoloModel.removeAllElements();
+        ruoloModelElimina.removeAllElements(); // Rimuovi tutti gli elementi dal modello
         if (unitaSelezionata != null) {
             for (ElementoOrganigramma elemento : unitaSelezionata.getElementi()) {
                 if (elemento instanceof Ruolo) {
-                    ruoloModel.addElement((Ruolo) elemento);
+                    ruoloModelElimina.addElement((Ruolo) elemento);
                 }
             }
+        }
+        ruoloComboBoxElimina.repaint(); // Forza il repaint della combobox
+    }
+
+    private void aggiornaPersoneTextArea(Ruolo ruolo) {
+        personeTextArea.setText("");
+        if (ruolo != null) {
+            ArrayList<String> persone = organigramma.getPersonePerRuolo(ruolo);
+            for (String persona : persone) {
+                personeTextArea.append(persona + "\n");
+            }
+        }
+    }
+
+    private void aggiungiPersonaAlRuolo() {
+        Ruolo ruolo = (Ruolo) ruoloComboBoxRuoli.getSelectedItem();
+        String nomePersona = nomePersonaField.getText().trim();
+        if (ruolo != null && !nomePersona.isEmpty()) {
+            organigramma.aggiungiPersonaAlRuolo(ruolo, nomePersona);
+            aggiornaPersoneTextArea(ruolo);
+        }
+    }
+
+    private void rimuoviPersonaDalRuolo() {
+        Ruolo ruolo = (Ruolo) ruoloComboBoxRuoli.getSelectedItem();
+        String nomePersona = nomePersonaField.getText().trim();
+        if (ruolo != null && !nomePersona.isEmpty()) {
+            organigramma.rimuoviPersonaDalRuolo(ruolo, nomePersona);
+            aggiornaPersoneTextArea(ruolo);
         }
     }
 
@@ -239,7 +333,7 @@ public class PannelloDiGestione extends JPanel {
     }
 
     private void eliminaRuolo() {
-        Ruolo ruolo = (Ruolo) ruoloComboBox.getSelectedItem();
+        Ruolo ruolo = (Ruolo) ruoloComboBoxElimina.getSelectedItem();
         if (ruolo != null) {
             UnitaOrganizzativa unitaDiAppartenenza = trovaUnitaDiAppartenenzaPerRuolo((UnitaOrganizzativa) organigramma.getRoot(), ruolo);
             if (unitaDiAppartenenza != null) {

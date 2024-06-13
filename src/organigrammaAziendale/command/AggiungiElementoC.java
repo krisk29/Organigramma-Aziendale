@@ -1,7 +1,5 @@
 package organigrammaAziendale.command;
 
-import organigrammaAziendale.composite.ElementoOrganigramma;
-
 public class AggiungiElementoC implements Command{
 
     ElementoOrganigramma genitore;

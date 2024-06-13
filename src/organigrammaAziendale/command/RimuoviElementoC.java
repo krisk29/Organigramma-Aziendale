@@ -1,8 +1,5 @@
 package organigrammaAziendale.command;
 
-import organigrammaAziendale.composite.ElementoOrganigramma;
-import organigrammaAziendale.composite.UnitaOrganizzativa;
-
 import java.util.ArrayList;
 
 public class RimuoviElementoC implements Command {
