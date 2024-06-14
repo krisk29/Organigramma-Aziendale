@@ -4,19 +4,16 @@ import organigrammaAziendale.composite.Organigramma;
 import organigrammaAziendale.composite.UnitaOrganizzativa;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 public class SchermataPrincipale extends JFrame {
 
     final String TITOLO = "Organigramma Aziendale";
     JPanel finestra = new JPanel();
-    JScrollPane finestraScroll = new JScrollPane(finestra, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     PannelloDiGestione pannelloDiGestione;
     DisegnaOrganigramma organigrammaPanel;
@@ -32,34 +29,118 @@ public class SchermataPrincipale extends JFrame {
         // Setto di base a schermo intero la finestra
         this.setExtendedState(JFrame.MAXIMIZED_BOTH); // Massimizza la finestra
         // Aggiungo il JScrollPane al JFrame
-        this.getContentPane().add(finestraScroll); // Rendo la finestra scrollabile se necessario
+        this.getContentPane().add(finestra);
         // Setto un layout manager
         finestra.setLayout(new BorderLayout());
         // Aggiungo la barra del menu
         creaMenu();
-        // Mostra il popup per inserire il nome dell'organigramma
-        apriPopupNomeOrganigramma();
+    }
+
+    public SchermataPrincipale(Organigramma organigramma) {
+        this();
+        this.organigramma = organigramma;
+        this.setTitle(TITOLO + " - " + organigramma.getRoot().getNome());
+        aggiungiPannelloDiGestione(); // pannello di modifica
+        aggiungiPannelloOrganigramma(); // pannello che disegna l'organigramma
+        this.setVisible(true); // Impostare la visibilità alla fine
     }
 
     private void creaMenu() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu file = new JMenu("File");
 
-        // Aggiungi il menu "Salva"
-        JMenuItem salvaMenuItem = new JMenuItem("Salva");
-        salvaMenuItem.addActionListener(new ActionListener() {
+        JMenuItem nuovo = new JMenuItem("Nuovo");
+        nuovo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nuovaSchermata();
+            }
+        });
+
+        JMenuItem salva = new JMenuItem("Salva");
+        salva.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 salvaOrganigramma();
             }
         });
-        file.add(salvaMenuItem);
 
-        menuBar.add(file);
+        JMenuItem carica = new JMenuItem("Carica");
+        carica.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                caricaOrganigramma();
+            }
+        });
+
+        JMenuItem esci = new JMenuItem("Esci");
+        esci.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                esciProgramma();
+            }
+        });
+
+        menuBar.add(nuovo);
+        menuBar.add(salva);
+        menuBar.add(carica);
+        menuBar.add(esci);
+
         this.setJMenuBar(menuBar);
     }
 
-    private void apriPopupNomeOrganigramma() {
+
+    private void nuovaSchermata() {
+        SchermataPrincipale schermata = new SchermataPrincipale();
+        schermata.apriPopupNomeOrganigramma();
+
+        // Aggiungi il controllo sul nome dell'organigramma
+        if (schermata.getOrganigramma() != null) {
+            schermata.setVisible(true);
+            dispose();
+        } else {
+            // In caso di nome vuoto, non fare nulla
+            schermata.dispose();  // Chiudi la finestra che non deve essere mostrata
+        }
+    }
+
+    public Organigramma getOrganigramma() {
+        return this.organigramma;
+    }
+
+    private void caricaOrganigramma() {
+        JFileChooser fileChooser = new JFileChooser();
+
+        FileNameExtensionFilter filterTxt = new FileNameExtensionFilter("File di testo (.txt)", "txt");
+        FileNameExtensionFilter filterCsv = new FileNameExtensionFilter("File CSV (.csv)", "csv");
+        fileChooser.addChoosableFileFilter(filterTxt);
+        fileChooser.addChoosableFileFilter(filterCsv);
+
+        fileChooser.setDialogTitle("Seleziona il file da caricare");
+
+        int selezione = fileChooser.showOpenDialog(this);
+
+        if (selezione == JFileChooser.APPROVE_OPTION) {
+            File fileSelezionato = fileChooser.getSelectedFile();
+            caricaOrganigrammaDaFile(fileSelezionato);
+        }
+    }
+
+
+
+    private void esciProgramma() {
+        int scelta = JOptionPane.showConfirmDialog(this, "Vuoi salvare prima di uscire?", "Conferma Uscita", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+        if (scelta == JOptionPane.YES_OPTION) {
+            salvaOrganigramma();
+            System.exit(0);
+        } else if (scelta == JOptionPane.NO_OPTION) {
+            System.exit(0);
+        }
+    }
+
+
+
+    public void apriPopupNomeOrganigramma() {
         String nomeOrganigramma = JOptionPane.showInputDialog(this, "Inserisci il nome dell'organigramma:");
         if (nomeOrganigramma != null && !nomeOrganigramma.isEmpty()) {
             this.setTitle(TITOLO + " - " + nomeOrganigramma);
@@ -68,29 +149,37 @@ public class SchermataPrincipale extends JFrame {
             organigramma.setRoot(root);
             aggiungiPannelloDiGestione(); // pannello di modifica
             aggiungiPannelloOrganigramma(); // pannello che disegna l'organigramma
-            this.setVisible(true); // Impostare la visibilità alla fine
         } else {
-            // Inserire gestione nel caso in cui il nome inserito sia vuoto o annullato
+            // Nome vuoto, mostra un messaggio di errore
             JOptionPane.showMessageDialog(this, "Il nome dell'organigramma non può essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
-            apriPopupNomeOrganigramma(); // Richiama il popup per inserire nuovamente il nome
+            // Non fare altro perché il nome dell'organigramma non è stato inserito correttamente
+            organigramma = null; // Imposta organigramma a null per segnalare che non è stato creato correttamente
         }
     }
 
-    private void aggiungiPannelloDiGestione() {
+
+
+    public void aggiungiPannelloDiGestione() {
         pannelloDiGestione = new PannelloDiGestione(this, organigramma);
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(pannelloDiGestione, BorderLayout.CENTER);
         finestra.add(rightPanel, BorderLayout.EAST);
     }
 
-    private void aggiungiPannelloOrganigramma() {
+    public void aggiungiPannelloOrganigramma() {
         organigrammaPanel = new DisegnaOrganigramma(organigramma.getRoot());
+        JScrollPane scrollPane = new JScrollPane(organigrammaPanel);  // Aggiunta del JScrollPane
+        scrollPane.setPreferredSize(new Dimension(1200, 800));  // Imposta le dimensioni preferite del JScrollPane
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.add(organigrammaPanel, BorderLayout.CENTER);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);  // Aggiunta del JScrollPane al centro
         finestra.add(centerPanel, BorderLayout.CENTER);
+        finestra.revalidate();  // Aggiorna la finestra principale
+        finestra.repaint();  // Ridisegna la finestra principale
     }
 
-    private void salvaOrganigramma() {
+
+
+    public void salvaOrganigramma() {
         JFileChooser fileChooser = new JFileChooser();
         int scelta = fileChooser.showSaveDialog(this);
 
@@ -112,14 +201,27 @@ public class SchermataPrincipale extends JFrame {
         }
     }
 
+    public void caricaOrganigrammaDaFile(File file) {
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
 
+            organigramma = (Organigramma) objectInputStream.readObject();
+            JOptionPane.showMessageDialog(this, "Organigramma caricato con successo.", "Caricamento", JOptionPane.INFORMATION_MESSAGE);
+            refreshOrganigramma();
+
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Errore durante il caricamento dell'organigramma:\n" + e.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+            System.err.println(e);
+        }
+    }
 
     public void refreshOrganigramma() {
-        finestra.remove(organigrammaPanel);
+        finestra.removeAll();
+        aggiungiPannelloDiGestione();
         aggiungiPannelloOrganigramma();
         finestra.revalidate();
         finestra.repaint();
-        organigramma.printOrganigramma(organigramma.getRoot(),0); // Stampa l'organigramma nel terminale
+        organigramma.printOrganigramma(organigramma.getRoot(), 0); // Stampa l'organigramma nel terminale
         System.out.println(""); //spazio fra un organigramma stampato
     }
 

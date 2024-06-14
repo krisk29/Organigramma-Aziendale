@@ -1,5 +1,5 @@
 package organigrammaAziendale.interfacciaGrafica;
-//1
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -23,7 +23,7 @@ public class SchermataIniziale extends JFrame {
         this.setVisible(true);
 
         // Pannello per le funzioni + sfondo
-        JPanel pannello = new JPanel(new GridBagLayout()){
+        JPanel pannello = new JPanel(new GridBagLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -101,17 +101,22 @@ public class SchermataIniziale extends JFrame {
         this.setVisible(true);
     }
 
-    public void nuovaSchermata() {
-        // Crea un'istanza della seconda schermata
+    private void nuovaSchermata() {
         SchermataPrincipale schermata = new SchermataPrincipale();
-        // Rendi visibile la seconda schermata
-        schermata.setVisible(true);
-        // Chiudi la schermata corrente se necessario
-        dispose();
+        schermata.apriPopupNomeOrganigramma();
+
+        // Aggiungi il controllo sul nome dell'organigramma
+        if (schermata.getOrganigramma() != null) {
+            schermata.setVisible(true);
+            dispose();
+        } else {
+            // In caso di nome vuoto, non fare nulla
+            schermata.dispose();  // Chiudi la finestra che non deve essere mostrata
+        }
     }
 
     public void caricaOrganigramma() {
-        // Crea un selettore di file    -   da sistemare
+        // Crea un selettore di file
         JFileChooser fileChooser = new JFileChooser();
 
         // Aggiungi filtri per i file con estensioni specifiche
@@ -129,9 +134,12 @@ public class SchermataIniziale extends JFrame {
         // Se l'utente ha selezionato un file
         if (selezione == JFileChooser.APPROVE_OPTION) {
             File fileSelezionato = fileChooser.getSelectedFile();
-            // Qui puoi scrivere il codice per elaborare il file selezionato
-            // Ad esempio, puoi leggere il file e caricare l'organigramma
-            System.out.println("File selezionato: " + fileSelezionato.getAbsolutePath()); //operazione di esempio
+            // Crea una nuova schermata principale
+            SchermataPrincipale schermata = new SchermataPrincipale();
+            // Carica l'organigramma dal file selezionato
+            schermata.caricaOrganigrammaDaFile(fileSelezionato);
+            schermata.setVisible(true);
+            dispose();
         }
     }
 

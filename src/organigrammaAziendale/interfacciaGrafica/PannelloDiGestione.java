@@ -161,7 +161,6 @@ public class PannelloDiGestione extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (eliminaUnitaButton.isSelected()) {
                     eliminaUnita();
-                } else if (eliminaRuoloButton.isSelected()) {
                     eliminaRuolo();
                 }
                 schermataPrincipale.refreshOrganigramma();
