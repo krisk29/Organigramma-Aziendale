@@ -1,15 +1,13 @@
 package organigrammaAziendale.interfacciaGrafica;
 
-import organigrammaAziendale.composite.ElementoOrganigramma;
-import organigrammaAziendale.composite.Organigramma;
-import organigrammaAziendale.composite.Ruolo;
-import organigrammaAziendale.composite.UnitaOrganizzativa;
+import organigrammaAziendale.command.*;
+import organigrammaAziendale.command.comandiPanneloGestione.*;
+import organigrammaAziendale.composite.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class PannelloDiGestione extends JPanel {
 
@@ -161,9 +159,12 @@ public class PannelloDiGestione extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (eliminaUnitaButton.isSelected()) {
                     eliminaUnita();
+                } else if (eliminaRuoloButton.isSelected()) {
                     eliminaRuolo();
                 }
+                // Aggiorna la schermata e le combobox dopo l'eliminazione
                 schermataPrincipale.refreshOrganigramma();
+                aggiornaComboBox();
                 aggiornaRuoloComboBoxPerUnita((UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem());
             }
         });
@@ -233,140 +234,49 @@ public class PannelloDiGestione extends JPanel {
         aggiornaComboBox();
     }
 
-    private void aggiornaComboBox() {
-        unitaOrganizzativaModel.removeAllElements();
-        ruoloModelElimina.removeAllElements();
-        ruoloModelRuoli.removeAllElements();
-        unitaOrganizzativaDiAppartenenzaModel.removeAllElements();
-
-        UnitaOrganizzativa root = (UnitaOrganizzativa) organigramma.getRoot();
-        if (root != null) {
-            aggiungiElementiAlleComboBox(root);
-        }
+    public void aggiornaComboBox() {
+        Command aggiornaC = new AggiornaComboBox(organigramma, unitaOrganizzativaModel, unitaOrganizzativaDiAppartenenzaModel, ruoloModelElimina, ruoloModelRuoli, this);
+        aggiornaC.execute();
     }
 
-    private void aggiungiElementiAlleComboBox(UnitaOrganizzativa unita) {
-        unitaOrganizzativaModel.addElement(unita);
-        unitaOrganizzativaDiAppartenenzaModel.addElement(unita);
-        for (ElementoOrganigramma elemento : unita.getElementi()) {
-            if (elemento instanceof UnitaOrganizzativa) {
-                UnitaOrganizzativa unitaFiglia = (UnitaOrganizzativa) elemento;
-                aggiungiElementiAlleComboBox(unitaFiglia);
-            } else if (elemento instanceof Ruolo) {
-                Ruolo ruolo = (Ruolo) elemento;
-                ruoloModelElimina.addElement(ruolo);
-                ruoloModelRuoli.addElement(ruolo);
-            }
-        }
+    public void aggiornaRuoloComboBoxPerUnita(UnitaOrganizzativa unitaSelezionata) {
+        Command aggiorna = new AggiornaRuoloComboBoxPerUnita(ruoloModelElimina, unitaSelezionata, ruoloComboBoxElimina);
+        aggiorna.execute();
     }
 
-    private void aggiornaRuoloComboBoxPerUnita(UnitaOrganizzativa unitaSelezionata) {
-        ruoloModelElimina.removeAllElements(); // Rimuovi tutti gli elementi dal modello
-        if (unitaSelezionata != null) {
-            for (ElementoOrganigramma elemento : unitaSelezionata.getElementi()) {
-                if (elemento instanceof Ruolo) {
-                    ruoloModelElimina.addElement((Ruolo) elemento);
-                }
-            }
-        }
-        ruoloComboBoxElimina.repaint(); // Forza il repaint della combobox
+    public void aggiornaPersoneTextArea(Ruolo ruolo) {
+        Command aggiorna = new AggiornaPersoneTextArea(ruolo, organigramma, personeTextArea);
+        aggiorna.execute();
     }
 
-    private void aggiornaPersoneTextArea(Ruolo ruolo) {
-        personeTextArea.setText("");
-        if (ruolo != null) {
-            ArrayList<String> persone = organigramma.getPersonePerRuolo(ruolo);
-            for (String persona : persone) {
-                personeTextArea.append(persona + "\n");
-            }
-        }
+    public void aggiungiPersonaAlRuolo() {
+        Command aggiorna = new AggiungiPersoneAlRuolo(organigramma, ruoloComboBoxRuoli, nomePersonaField, this);
+        aggiorna.execute();
     }
 
-    private void aggiungiPersonaAlRuolo() {
-        Ruolo ruolo = (Ruolo) ruoloComboBoxRuoli.getSelectedItem();
-        String nomePersona = nomePersonaField.getText().trim();
-        if (ruolo != null && !nomePersona.isEmpty()) {
-            organigramma.aggiungiPersonaAlRuolo(ruolo, nomePersona);
-            aggiornaPersoneTextArea(ruolo);
-        }
+    public void rimuoviPersonaDalRuolo() {
+        Command aggiorna = new RimuoviPersonaDalRuolo(organigramma, ruoloComboBoxRuoli, nomePersonaField, this);
+        aggiorna.execute();
     }
 
-    private void rimuoviPersonaDalRuolo() {
-        Ruolo ruolo = (Ruolo) ruoloComboBoxRuoli.getSelectedItem();
-        String nomePersona = nomePersonaField.getText().trim();
-        if (ruolo != null && !nomePersona.isEmpty()) {
-            organigramma.rimuoviPersonaDalRuolo(ruolo, nomePersona);
-            aggiornaPersoneTextArea(ruolo);
-        }
+    public void aggiungiUnita() {
+        Command aggiungiU = new AggiungiUnita(nomeElementoField, unitaOrganizzativaDiAppartenenzaComboBox, this);
+        aggiungiU.execute();
     }
 
-    private void aggiungiUnita() {
-        String nomeUnita = nomeElementoField.getText().trim();
-        UnitaOrganizzativa unitaDiAppartenenza = (UnitaOrganizzativa) unitaOrganizzativaDiAppartenenzaComboBox.getSelectedItem();
-        if (!nomeUnita.isEmpty() && unitaDiAppartenenza != null) {
-            UnitaOrganizzativa nuovaUnita = new UnitaOrganizzativa(nomeUnita);
-            unitaDiAppartenenza.add(nuovaUnita);
-            aggiornaComboBox();
-        }
+    public void aggiungiRuolo() {
+        Command aggiungiR = new AggiungiRuolo(nomeElementoField, unitaOrganizzativaDiAppartenenzaComboBox, this);
+        aggiungiR.execute();
     }
 
-    private void aggiungiRuolo() {
-        String nomeRuolo = nomeElementoField.getText().trim();
-        UnitaOrganizzativa unitaDiAppartenenza = (UnitaOrganizzativa) unitaOrganizzativaDiAppartenenzaComboBox.getSelectedItem();
-        if (!nomeRuolo.isEmpty() && unitaDiAppartenenza != null) {
-            Ruolo nuovoRuolo = new Ruolo(nomeRuolo);
-            unitaDiAppartenenza.add(nuovoRuolo);
-            aggiornaComboBox();
-        }
+    public void eliminaUnita() {
+        Command eliminaU = new EliminaUnita(organigramma, unitaOrganizzativaComboBox, this);
+        eliminaU.execute();
     }
 
-    private void eliminaUnita() {
-        UnitaOrganizzativa unita = (UnitaOrganizzativa) unitaOrganizzativaComboBox.getSelectedItem();
-        if (unita != null && !unita.equals(organigramma.getRoot())) {
-            UnitaOrganizzativa unitaDiAppartenenza = trovaUnitaDiAppartenenza((UnitaOrganizzativa) organigramma.getRoot(), unita);
-            if (unitaDiAppartenenza != null) {
-                unitaDiAppartenenza.remove(unita);
-                aggiornaComboBox();
-            }
-        }
+    public void eliminaRuolo() {
+        Command eliminaR = new EliminaRuolo(organigramma, ruoloComboBoxElimina,this);
+        eliminaR.execute();
     }
 
-    private void eliminaRuolo() {
-        Ruolo ruolo = (Ruolo) ruoloComboBoxElimina.getSelectedItem();
-        if (ruolo != null) {
-            UnitaOrganizzativa unitaDiAppartenenza = trovaUnitaDiAppartenenzaPerRuolo((UnitaOrganizzativa) organigramma.getRoot(), ruolo);
-            if (unitaDiAppartenenza != null) {
-                unitaDiAppartenenza.remove(ruolo);
-                aggiornaComboBox();
-            }
-        }
-    }
-
-    private UnitaOrganizzativa trovaUnitaDiAppartenenza(UnitaOrganizzativa unitaCorrente, UnitaOrganizzativa unitaDaTrovare) {
-        for (ElementoOrganigramma elemento : unitaCorrente.getElementi()) {
-            if (elemento.equals(unitaDaTrovare)) {
-                return unitaCorrente;
-            } else if (elemento instanceof UnitaOrganizzativa) {
-                UnitaOrganizzativa unita = trovaUnitaDiAppartenenza((UnitaOrganizzativa) elemento, unitaDaTrovare);
-                if (unita != null) {
-                    return unita;
-                }
-            }
-        }
-        return null;
-    }
-
-    private UnitaOrganizzativa trovaUnitaDiAppartenenzaPerRuolo(UnitaOrganizzativa unitaCorrente, Ruolo ruoloDaTrovare) {
-        for (ElementoOrganigramma elemento : unitaCorrente.getElementi()) {
-            if (elemento.equals(ruoloDaTrovare)) {
-                return unitaCorrente;
-            } else if (elemento instanceof UnitaOrganizzativa) {
-                UnitaOrganizzativa unita = trovaUnitaDiAppartenenzaPerRuolo((UnitaOrganizzativa) elemento, ruoloDaTrovare);
-                if (unita != null) {
-                    return unita;
-                }
-            }
-        }
-        return null;
-    }
 }
