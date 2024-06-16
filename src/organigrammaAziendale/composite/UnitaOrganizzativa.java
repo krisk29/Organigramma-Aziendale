@@ -4,18 +4,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-//implementazione dell'interfaccia (observer)
-
 public class UnitaOrganizzativa implements ElementoOrganigramma, Serializable {
     private String nome;
-    private List<ElementoOrganigramma> elementi;    //la faccio così altrimenti non potrei inserire un'unità organizzativa dentro un'altra unità organizzativa
-    private int x, y;
+    private List<ElementoOrganigramma> elementi;    //unità organizzativa dentro un'altra unità organizzativa
 
     public UnitaOrganizzativa(String nome) {
         this.nome = nome;
         this.elementi = new ArrayList<>();
-        this.x = 0;
-        this.y = 0;
     }
 
     @Override
@@ -38,27 +33,9 @@ public class UnitaOrganizzativa implements ElementoOrganigramma, Serializable {
         elementi.remove(elemento);
     }
 
-
     @Override
     public List<ElementoOrganigramma> getElementi() {
         return elementi;
-    }
-
-    // Metodi getter e setter per le coordinate
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
     }
 
     public String toString(){

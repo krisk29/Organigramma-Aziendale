@@ -1,121 +1,3 @@
-/*package organigrammaAziendale.interfacciaGrafica;
-
-import organigrammaAziendale.composite.ElementoOrganigramma;
-import organigrammaAziendale.composite.UnitaOrganizzativa;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.List;
-
-public class DisegnaOrganigramma extends JPanel {
-    private ElementoOrganigramma root;
-    private int maxX = 0;
-    private int maxY = 0;
-
-    public DisegnaOrganigramma(ElementoOrganigramma root) {
-        this.root = root;
-        calcolaDimensioniMassime(root, getWidth() / 2, 30, 0);
-
-        // Aggiungi un ComponentListener per rilevare cambiamenti nella dimensione del pannello
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                // Ricalcola le dimensioni massime e rivedi il disegno quando la finestra viene ridimensionata
-                calcolaDimensioniMassime(root, getWidth() / 2, 30, 0);
-                repaint();  // Ridisegna il pannello
-            }
-        });
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        // Aggiunge uno spazio extra per migliorare la visualizzazione
-        return new Dimension(maxX + 50, maxY + 50);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Calcola il centro orizzontale della finestra
-        int centerX = getWidth() / 2;
-        int initY = 30;  // Posizione iniziale del disegno
-        // Ricalcola l'organigramma centrato rispetto al nuovo centro
-        drawOrganigramma(g, root, centerX, initY, 0);
-    }
-
-    public void drawOrganigramma(Graphics g, ElementoOrganigramma elemento, int x, int y, int level) {
-        int yOffset = 100;
-        int xOffset = 200;
-        int boxWidth = 100;
-        int boxHeight = 30;
-
-        // Draw the rectangle and the name inside it
-        g.setColor(Color.BLACK);
-        g.drawRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
-        g.drawString(elemento.getNome(), x - g.getFontMetrics().stringWidth(elemento.getNome()) / 2, y + 5);
-
-        // Aggiorna le dimensioni massime raggiunte
-        maxX = Math.max(maxX, x + boxWidth / 2);
-        maxY = Math.max(maxY, y + boxHeight / 2);
-
-        if (elemento instanceof UnitaOrganizzativa) {
-            List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-            int totalWidth = figli.size() * xOffset;
-            int startX = x - totalWidth / 2 + xOffset / 2;  // Calcolo del punto di inizio
-
-            // Calcola lo spaziamento tra i genitori in base al numero totale di nodi nel livello corrente
-            int parentSpacing = calculateParentSpacing(level, figli.size());
-
-            int childY = y + yOffset;  // Posizione verticale dei figli
-
-            for (ElementoOrganigramma figlio : figli) {
-                g.drawLine(x, y + boxHeight / 2, startX, childY - boxHeight / 2);
-                drawOrganigramma(g, figlio, startX, childY, level + 1);
-                startX += xOffset;  // Mantieni lo spaziamento tra i figli costante
-            }
-        }
-    }
-
-    // Metodo ausiliario per calcolare lo spaziamento tra genitori in base al livello e al numero di figli
-    private int calculateParentSpacing(int level, int numChildren) {
-        // Aumenta il fattore di moltiplicazione per ottenere un buon spaziamento tra i genitori
-        int parentSpacing = 300 + level * 150;
-
-        // Aggiungi spazio basato sulla larghezza totale dei nodi figli
-        int totalWidth = numChildren * 200; // Assumiamo xOffset = 200 come nel tuo codice
-        parentSpacing += totalWidth;
-
-        return parentSpacing;
-    }
-
-
-    public void calcolaDimensioniMassime(ElementoOrganigramma elemento, int x, int y, int level) {
-        int yOffset = 100;
-        int xOffset = 200 / (level + 1);
-        int boxWidth = 100;
-        int boxHeight = 30;
-
-        // Aggiorna le dimensioni massime raggiunte
-        maxX = Math.max(maxX, x + boxWidth / 2);
-        maxY = Math.max(maxY, y + boxHeight / 2);
-
-        if (elemento instanceof UnitaOrganizzativa) {
-            List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-            int childY = y + yOffset;
-            int totalWidth = figli.size() * xOffset;
-            for (ElementoOrganigramma figlio : figli) {
-                int childX = x - (totalWidth / 2) + figli.indexOf(figlio) * xOffset + xOffset / 2;
-                calcolaDimensioniMassime(figlio, childX, childY, level + 1);
-            }
-        }
-    }
-
-}
-*/
-
-
 package organigrammaAziendale.interfacciaGrafica;
 
 import organigrammaAziendale.composite.ElementoOrganigramma;
@@ -125,15 +7,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DisegnaOrganigramma extends JPanel {
     private ElementoOrganigramma root;
     private int maxX = 0;
     private int maxY = 0;
+    private Map<ElementoOrganigramma, Integer> subtreeWidthMap = new HashMap<>();
+    private static final int MAX_WIDTH = 100; // Larghezza massima del rettangolo
+    private static final int INITIAL_BOX_HEIGHT = 30; // Altezza iniziale del rettangolo
 
     public DisegnaOrganigramma(ElementoOrganigramma root) {
         this.root = root;
+        calcolaLarghezzeSottoalbero(root);
         calcolaDimensioniMassime(root, getWidth() / 2, 30, 0);
 
         // Aggiungi un ComponentListener per rilevare cambiamenti nella dimensione del pannello
@@ -164,15 +52,26 @@ public class DisegnaOrganigramma extends JPanel {
     }
 
     public void drawOrganigramma(Graphics g, ElementoOrganigramma elemento, int x, int y, int level) {
-        int yOffset = 100;
-        int xOffset = 200;
-        int boxWidth = 100;
-        int boxHeight = 30;
+        int yOffset = 60;  // Distanza verticale tra i livelli
+        int boxWidth = MAX_WIDTH;
+        int boxHeight;
 
-        // Draw the rectangle and the name inside it
+        // Suddividi il nome in più righe se è troppo lungo
+        String nome = elemento.getNome();
+        FontMetrics fm = g.getFontMetrics();
+        List<String> lines = splitStringToLines(nome, fm, boxWidth);
+        boxHeight = Math.max(INITIAL_BOX_HEIGHT, lines.size() * fm.getHeight());
+
+        // Draw the rectangle
         g.setColor(Color.BLACK);
         g.drawRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
-        g.drawString(elemento.getNome(), x - g.getFontMetrics().stringWidth(elemento.getNome()) / 2, y + 5);
+
+        // Draw each line of the name inside the rectangle
+        int textY = y - boxHeight / 2 + fm.getAscent();
+        for (String line : lines) {
+            g.drawString(line, x - fm.stringWidth(line) / 2, textY);
+            textY += fm.getHeight();
+        }
 
         // Aggiorna le dimensioni massime raggiunte
         maxX = Math.max(maxX, x + boxWidth / 2);
@@ -180,76 +79,42 @@ public class DisegnaOrganigramma extends JPanel {
 
         if (elemento instanceof UnitaOrganizzativa) {
             List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-            int childY = y + yOffset;
-            int totalWidth = figli.size() * xOffset;
-            int startX = x - totalWidth / 2 + xOffset / 2;
+            int childY = y + yOffset + boxHeight / 2;
+            int totalWidth = subtreeWidthMap.get(elemento);
+            int startX = x - totalWidth / 2;
             for (ElementoOrganigramma figlio : figli) {
-                g.drawLine(x, y + boxHeight / 2, startX, childY - boxHeight / 2);
-                drawOrganigramma(g, figlio, startX, childY, level + 1);
-                startX += xOffset;
+                int childSubtreeWidth = subtreeWidthMap.get(figlio);
+                int childX = startX + childSubtreeWidth / 2;
+                g.drawLine(x, y + boxHeight / 2, childX, childY - boxHeight / 2);
+                drawOrganigramma(g, figlio, childX, childY, level + 1);
+                startX += childSubtreeWidth;
             }
         }
     }
 
-    public void calcolaDimensioniMassime(ElementoOrganigramma elemento, int x, int y, int level) {
-        int yOffset = 100;
-        int xOffset = 200;
-        int boxWidth = 100;
-        int boxHeight = 30;
-
-        // Aggiorna le dimensioni massime raggiunte
-        maxX = Math.max(maxX, x + boxWidth / 2);
-        maxY = Math.max(maxY, y + boxHeight / 2);
+    public int calcolaLarghezzeSottoalbero(ElementoOrganigramma elemento) {
+        int xOffset = 150;  // Distanza orizzontale tra i nodi figli
+        int boxWidth = MAX_WIDTH;
 
         if (elemento instanceof UnitaOrganizzativa) {
             List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-            int childY = y + yOffset;
-            int totalWidth = figli.size() * xOffset;
-            int startX = x - totalWidth / 2 + xOffset / 2;
+            int totalWidth = 0;
             for (ElementoOrganigramma figlio : figli) {
-                calcolaDimensioniMassime(figlio, startX, childY, level + 1);
-                startX += xOffset;
+                totalWidth += calcolaLarghezzeSottoalbero(figlio);
             }
+            totalWidth = Math.max(totalWidth, boxWidth + xOffset);
+            subtreeWidthMap.put(elemento, totalWidth);
+            return totalWidth;
+        } else {
+            subtreeWidthMap.put(elemento, boxWidth + xOffset);
+            return boxWidth + xOffset;
         }
     }
 
-}
-
-
-/*
-   public void drawOrganigramma(Graphics g, ElementoOrganigramma elemento, int x, int y, int level) {
-       int yOffset = 100;
-       int xOffset = 200 / (level + 1);
-       int boxWidth = 100;
-       int boxHeight = 30;
-
-       // Draw the rectangle and the name inside it
-       g.setColor(Color.BLACK);
-       g.drawRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
-       g.drawString(elemento.getNome(), x - g.getFontMetrics().stringWidth(elemento.getNome()) / 2, y + 5);
-
-       // Aggiorna le dimensioni massime raggiunte
-       maxX = Math.max(maxX, x + boxWidth / 2);
-       maxY = Math.max(maxY, y + boxHeight / 2);
-
-       if (elemento instanceof UnitaOrganizzativa) {
-           List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-           int childY = y + yOffset;
-           int totalWidth = figli.size() * xOffset;
-           for (ElementoOrganigramma figlio : figli) {
-               int childX = x - (totalWidth / 2) + figli.indexOf(figlio) * xOffset + xOffset / 2;
-               g.drawLine(x, y + boxHeight / 2, childX, childY - boxHeight / 2);
-               drawOrganigramma(g, figlio, childX, childY, level + 1);
-           }
-       }
-   }
-
-
     public void calcolaDimensioniMassime(ElementoOrganigramma elemento, int x, int y, int level) {
-        int yOffset = 100;
-        int xOffset = 200 / (level + 1);
-        int boxWidth = 100;
-        int boxHeight = 30;
+        int yOffset = 60;  // Distanza verticale tra i livelli
+        int boxWidth = MAX_WIDTH;
+        int boxHeight = INITIAL_BOX_HEIGHT;
 
         // Aggiorna le dimensioni massime raggiunte
         maxX = Math.max(maxX, x + boxWidth / 2);
@@ -257,13 +122,33 @@ public class DisegnaOrganigramma extends JPanel {
 
         if (elemento instanceof UnitaOrganizzativa) {
             List<ElementoOrganigramma> figli = ((UnitaOrganizzativa) elemento).getElementi();
-            int childY = y + yOffset;
-            int totalWidth = figli.size() * xOffset;
+            int childY = y + yOffset + boxHeight / 2;
+            int totalWidth = subtreeWidthMap.get(elemento);
+            int startX = x - totalWidth / 2;
             for (ElementoOrganigramma figlio : figli) {
-                int childX = x - (totalWidth / 2) + figli.indexOf(figlio) * xOffset + xOffset / 2;
+                int childSubtreeWidth = subtreeWidthMap.get(figlio);
+                int childX = startX + childSubtreeWidth / 2;
                 calcolaDimensioniMassime(figlio, childX, childY, level + 1);
+                startX += childSubtreeWidth;
             }
         }
     }
-*/  //funzione vecchia - funzionante
 
+    private List<String> splitStringToLines(String text, FontMetrics fm, int maxWidth) {
+        StringBuilder line = new StringBuilder();
+        java.util.List<String> lines = new java.util.ArrayList<>();
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (fm.stringWidth(line.toString() + c) < maxWidth) {
+                line.append(c);
+            } else {
+                lines.add(line.toString());
+                line = new StringBuilder();
+                line.append(c);
+            }
+        }
+        lines.add(line.toString());
+        return lines;
+    }
+}
