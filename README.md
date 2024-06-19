@@ -1,0 +1,1 @@
+Per avviare il progetto, basta avviare il main nella classe Main. La schermata che si aprirà sarà SchermataIniziale in cui è possibile creare o caricare un nuovo organigramma o chiudere il programma. Creando un nuovo organigramma ci sarà la schermata in cui è possibile tramite un form gestire l'organigramma.
